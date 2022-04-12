@@ -45,7 +45,7 @@ contract OracleSC {
     }
 }
 
-contract PredictionCoinSC is Pausable, OracleSC {
+contract CoinPredictionSC is Pausable, OracleSC {
     constructor(address _admin, address _operator) {
         Admin = _admin;
         Operator = _operator;
