@@ -50,7 +50,7 @@ contract OracleSC {
     }
 }
 
-contract PredictionTokenSC is Pausable, OracleSC {
+contract TokenPredictionSC is Pausable, OracleSC {
     constructor(address _admin, address _operator, address _token) {
         Admin = _admin;
         Operator = _operator;
