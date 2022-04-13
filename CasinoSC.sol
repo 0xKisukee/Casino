@@ -1,9 +1,10 @@
 // SPDX-License-Identifier: MIT
-// SPDX-License-Identifier: MIT
 pragma solidity ^0.8.13;
 
 interface IERC20 {
-    function transfer(address recipient, uint amount) external returns (bool);
+    function transfer(address recipient, uint256 amount)
+        external
+        returns (bool);
 }
 
 contract CasinoSC {
@@ -13,14 +14,14 @@ contract CasinoSC {
     }
 
     struct UserInfo {
-        uint wagered;
+        uint256 wagered;
     }
 
     // Users infos
-    mapping (address => UserInfo) userInfo;
+    mapping(address => UserInfo) userInfo;
 
     // Authorized games
-    mapping (address => bool) isAuthGame;
+    mapping(address => bool) isAuthGame;
 
     address admin;
 
@@ -28,22 +29,22 @@ contract CasinoSC {
     address token;
 
     // Treasury of the team
-    uint treasury;
+    uint256 treasury;
 
-        /* FUNCTIONS */
+    /* FUNCTIONS */
 
     // Called by games to pay players when they claim their earnings
-    function executeClaim(address _user, uint _amount) public onlyAuthGames {
+    function executeClaim(address _user, uint256 _amount) public onlyAuthGames {
         IERC20(token).transfer(_user, _amount);
     }
 
     // Called by games to update fees going to the team treasury
-    function addToTreasury(uint _amount) public onlyAuthGames {
+    function addToTreasury(uint256 _amount) public onlyAuthGames {
         treasury += _amount;
     }
 
     // Called by games to update the total amount wagered by a user
-    function addWagered(address _user, uint _amount) public onlyAuthGames {
+    function addWagered(address _user, uint256 _amount) public onlyAuthGames {
         userInfo[_user].wagered += _amount;
     }
 
@@ -53,7 +54,7 @@ contract CasinoSC {
         isAuthGame[_game] = true;
     }
 
-    // Called by admin when he bans a game SC from restricted functions 
+    // Called by admin when he bans a game SC from restricted functions
     function banGame(address _game) public onlyAdmin {
         require(isAuthGame[_game] == true, "Games is already banned.");
         isAuthGame[_game] = false;
@@ -65,7 +66,7 @@ contract CasinoSC {
         treasury = 0;
     }
 
-        /* MODIFIERS */
+    /* MODIFIERS */
 
     modifier onlyAdmin() {
         require(msg.sender == admin, "Caller is not the admin.");
@@ -73,7 +74,10 @@ contract CasinoSC {
     }
 
     modifier onlyAuthGames() {
-        require(isAuthGame[msg.sender] == true, "Caller is not an authorized game.");
+        require(
+            isAuthGame[msg.sender] == true,
+            "Caller is not an authorized game."
+        );
         _;
     }
 }
