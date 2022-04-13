@@ -64,6 +64,7 @@ contract CasinoSC {
         treasury = 0;
     }
 
+
     /* MODIFIERS */
 
     modifier onlyAdmin() {
