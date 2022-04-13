@@ -11,6 +11,7 @@ contract CasinoSC {
         token = _token;
     }
 
+
     struct UserInfo {
         uint wagered;
     }
