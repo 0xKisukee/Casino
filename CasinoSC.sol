@@ -2,9 +2,7 @@
 pragma solidity ^0.8.13;
 
 interface IERC20 {
-    function transfer(address recipient, uint256 amount)
-        external
-        returns (bool);
+    function transfer(address recipient, uint256 amount) external returns (bool);
 }
 
 contract CasinoSC {
@@ -14,7 +12,7 @@ contract CasinoSC {
     }
 
     struct UserInfo {
-        uint256 wagered;
+        uint wagered;
     }
 
     // Users infos
