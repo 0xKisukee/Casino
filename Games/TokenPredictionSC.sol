@@ -37,24 +37,31 @@ interface IERC20 {
     function transfer(address recipient, uint256 amount) external returns (bool);
 }
 
-interface PAIR {
+interface IPAIR {
     function getReserves() external view returns (uint112 _reserve0, uint112 _reserve1, uint32 _blockTimestampLast);
+}
+
+interface ICASINO {
+    function executeClaim(address _user, uint256 _amount) external;
+    function addToTreasury(uint256 _amount) external;
+    function addWagered(address _user, uint256 _amount) external;
 }
 
 contract OracleSC {
     address AVAX_USDC = 0x5cbF3Ac8007fBa2dD13a3128F800dd26d33B2C0A;
 
     function getAVAXPrice() public view returns (uint price) {
-        (uint avax, uint usdc, ) = PAIR(AVAX_USDC).getReserves();
+        (uint avax, uint usdc, ) = IPAIR(AVAX_USDC).getReserves();
         price = usdc / avax;
     }
 }
 
 contract TokenPredictionSC is Pausable, OracleSC {
-    constructor(address _admin, address _operator, address _token) {
-        Admin = _admin;
-        Operator = _operator;
-        Token = _token;
+    constructor(address _casino, address _admin, address _operator, address _token) {
+        casino = _casino;
+        admin = _admin;
+        operator = _operator;
+        token = _token;
     }
 
     struct Round {
@@ -80,7 +87,6 @@ contract TokenPredictionSC is Pausable, OracleSC {
 
     uint interval = 300;         // Interval between each round (in seconds)
     uint currentRound;
-    uint treasuryAmount;        // Amount claimable by Admin
     uint treasuryFee = 250;     // 2.5%
     uint maxTreasuryFee = 1000; // 10%
     uint minBet = 50;
@@ -89,9 +95,10 @@ contract TokenPredictionSC is Pausable, OracleSC {
     bool genesisStartOnce;
     bool genesisLockOnce;
     
-    address Admin;
-    address Operator;
-    address Token;
+    address casino;
+    address admin;
+    address operator;
+    address token;
 
     mapping(uint => Round) public rounds;
     mapping(address => uint[]) public userRounds;
@@ -191,14 +198,14 @@ contract TokenPredictionSC is Pausable, OracleSC {
         }
 
         rounds[_round].distributed = rewardAmount;
-        treasuryAmount += treasuryAmt;
+        ICASINO(casino).addToTreasury(treasuryAmt);
     }
 
     function betBear(uint _amount) public whenNotPaused {
         require(_amount >= minBet && _amount <= maxBet, "Bet amount not valid.");
         require(ledger[currentRound][msg.sender].amount == 0, "You have 1 bet per round.");
 
-        IERC20(Token).transferFrom(msg.sender, address(this), _amount);
+        IERC20(token).transferFrom(msg.sender, casino, _amount);
 
         rounds[currentRound].totalAmount += _amount;
         rounds[currentRound].bearAmount += _amount;
@@ -214,7 +221,7 @@ contract TokenPredictionSC is Pausable, OracleSC {
         require(_amount >= minBet && _amount <= maxBet, "Bet amount not valid.");
         require(ledger[currentRound][msg.sender].amount == 0, "You have 1 bet per round.");
 
-        IERC20(Token).transferFrom(msg.sender, address(this), _amount);
+        IERC20(token).transferFrom(msg.sender, casino, _amount);
 
         rounds[currentRound].totalAmount += _amount;
         rounds[currentRound].bullAmount += _amount;
@@ -248,7 +255,7 @@ contract TokenPredictionSC is Pausable, OracleSC {
             ledger[_round][_user].amount != 0;
     }
 
-    function claim(uint[] memory _rounds) public { //EDIT WITH REFUNDS ON BUFFER EXPIRATION
+    function claim(uint[] memory _rounds) public {
         uint reward;
 
         for (uint i = 0; i < _rounds.length; i++) {
@@ -270,14 +277,8 @@ contract TokenPredictionSC is Pausable, OracleSC {
         }
 
         if (reward > 0) {
-            IERC20(Token).transfer(msg.sender, reward);
+            ICASINO(casino).executeClaim(msg.sender, reward);
         }
-    }
-
-    function claimTreasury() public onlyAdmin {
-        require(treasuryAmount > 0, "Treasury is empty.");
-        IERC20(Token).transfer(Admin, treasuryAmount);
-        treasuryAmount = 0;
     }
 
     function setTreasuryFee(uint _value) public onlyAdmin {
@@ -312,20 +313,20 @@ contract TokenPredictionSC is Pausable, OracleSC {
     }
 
     function setAdmin(address _admin) public onlyAdmin {
-        Admin = _admin;
+        admin = _admin;
     }
 
     function setOperator(address _operator) public onlyAdmin {
-        Operator = _operator;
+        operator = _operator;
     }
 
     modifier onlyAdmin() {
-        require(Admin == msg.sender, "Caller is not the admin.");
+        require(admin == msg.sender, "Caller is not the admin.");
         _;
     }
 
     modifier onlyOperator() {
-        require(Operator == msg.sender, "Caller is not the operator.");
+        require(operator == msg.sender, "Caller is not the operator.");
         _;
     }
 }
