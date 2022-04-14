@@ -95,10 +95,17 @@ contract TokenPredictionSC is Pausable, OracleSC {
     bool genesisStartOnce;
     bool genesisLockOnce;
     
+    // Casino smart contract address
     address casino;
-    address admin;
-    address operator;
+
+    // Token used by the game
     address token;
+
+    // Admin address
+    address admin;
+
+    // Rounds executor (has to be automated)
+    address operator;
 
     mapping(uint => Round) public rounds;
     mapping(address => uint[]) public userRounds;
@@ -206,6 +213,7 @@ contract TokenPredictionSC is Pausable, OracleSC {
         require(ledger[currentRound][msg.sender].amount == 0, "You have 1 bet per round.");
 
         IERC20(token).transferFrom(msg.sender, casino, _amount);
+        ICASINO(casino).addWagered(msg.sender, _amount);
 
         rounds[currentRound].totalAmount += _amount;
         rounds[currentRound].bearAmount += _amount;
@@ -214,7 +222,6 @@ contract TokenPredictionSC is Pausable, OracleSC {
 
         ledger[currentRound][msg.sender].position = 1;
         ledger[currentRound][msg.sender].amount = _amount;
-
     }
 
     function betBull(uint _amount) public whenNotPaused {
@@ -222,6 +229,7 @@ contract TokenPredictionSC is Pausable, OracleSC {
         require(ledger[currentRound][msg.sender].amount == 0, "You have 1 bet per round.");
 
         IERC20(token).transferFrom(msg.sender, casino, _amount);
+        ICASINO(casino).addWagered(msg.sender, _amount);
 
         rounds[currentRound].totalAmount += _amount;
         rounds[currentRound].bullAmount += _amount;
@@ -230,7 +238,6 @@ contract TokenPredictionSC is Pausable, OracleSC {
 
         ledger[currentRound][msg.sender].position = 2;
         ledger[currentRound][msg.sender].amount = _amount;
-
     }
 
     function claimable(uint _round, address _user) public view returns (bool) {

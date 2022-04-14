@@ -21,6 +21,7 @@ contract CasinoSC {
     // Authorized games
     mapping(address => bool) isAuthGame;
 
+    // Admin address
     address admin;
 
     // Token used by the casino
@@ -28,8 +29,6 @@ contract CasinoSC {
 
     // Treasury of the team
     uint256 treasury;
-
-    /* FUNCTIONS */
 
     // Called by games to pay players when they claim their earnings
     function executeClaim(address _user, uint256 _amount) public onlyAuthGames {
@@ -63,8 +62,6 @@ contract CasinoSC {
         IERC20(token).transfer(admin, treasury);
         treasury = 0;
     }
-
-    /* MODIFIERS */
 
     modifier onlyAdmin() {
         require(msg.sender == admin, "Caller is not the admin.");
