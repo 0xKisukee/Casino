@@ -57,11 +57,11 @@ contract OracleSC {
 }
 
 contract TokenPredictionSC is Pausable, OracleSC {
-    constructor(address _casino, address _admin, address _operator, address _token) {
+    constructor(address _casino, address _token, address _admin, address _operator) {
         casino = _casino;
+        token = _token;
         admin = _admin;
         operator = _operator;
-        token = _token;
     }
 
     struct Round {
