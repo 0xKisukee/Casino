@@ -57,9 +57,9 @@ contract OracleSC {
 }
 
 contract TokenPredictionSC is Pausable, OracleSC {
-    constructor(address _casino, address _token, address _admin, address _operator) {
-        casino = _casino;
+    constructor(address _token, address _casino, address _admin, address _operator) {
         token = _token;
+        casino = _casino;
         admin = _admin;
         operator = _operator;
     }
@@ -94,12 +94,12 @@ contract TokenPredictionSC is Pausable, OracleSC {
     uint buffer = 60;           // Safety expiration time (in seconds)
     bool genesisStartOnce;
     bool genesisLockOnce;
-    
-    // Casino smart contract address
-    address casino;
 
     // Token used by the game
     address token;
+    
+    // Casino smart contract address
+    address casino;
 
     // Admin address
     address admin;

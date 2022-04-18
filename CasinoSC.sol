@@ -6,9 +6,9 @@ interface IERC20 {
 }
 
 contract CasinoSC {
-    constructor(address _admin, address _token) {
-        admin = _admin;
+    constructor(address _token, address _admin) {
         token = _token;
+        admin = _admin;
     }
 
     struct UserInfo {
@@ -21,14 +21,14 @@ contract CasinoSC {
     // Authorized games
     mapping(address => bool) isAuthGame;
 
-    // Admin address
-    address admin;
-
     // Token used by the casino
     address token;
 
+    // Admin address
+    address admin;
+
     // Treasury of the team
-    uint256 treasury;
+    uint treasury;
 
     // Called by games to pay players when they claim their earnings
     function executeClaim(address _user, uint256 _amount) public onlyAuthGames {
